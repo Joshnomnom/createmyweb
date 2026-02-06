@@ -7,9 +7,10 @@ interface BuilderStore {
     selectedComponentId: string | null;
     setPageData: (pageData: PageData) => void;
     setSelectedComponentId: (id: string | null) => void;
-    addComponent: (type: ComponentType, parentId?: string) => void;
+    addComponent: (type: ComponentType, parentId?: string, index?: number) => void;
     updateComponentProps: (id: string, props: Record<string, any>) => void;
     removeComponent: (id: string) => void;
+    moveComponent: (componentId: string, newIndex: number, newParentId?: string) => void;
 }
 
 const initialPageData: PageData = {
@@ -24,7 +25,7 @@ export const useBuilderStore = create<BuilderStore>((set) => ({
     selectedComponentId: null,
     setPageData: (pageData) => set({ pageData }),
     setSelectedComponentId: (id) => set({ selectedComponentId: id }),
-    addComponent: (type, parentId) => set((state) => {
+    addComponent: (type, parentId, index?: number) => set((state) => {
         const id = generateId();
         const newComponent: ComponentProps = {
             id,
@@ -38,12 +39,24 @@ export const useBuilderStore = create<BuilderStore>((set) => ({
 
         if (parentId && state.pageData.components[parentId]) {
             const parent = state.pageData.components[parentId];
+            const newChildren = [...(parent.children || [])];
+
+            if (typeof index === 'number' && index >= 0) {
+                newChildren.splice(index, 0, id);
+            } else {
+                newChildren.push(id);
+            }
+
             newComponents[parentId] = {
                 ...parent,
-                children: [...(parent.children || []), id],
+                children: newChildren,
             };
         } else {
-            newRootIds.push(id);
+            if (typeof index === 'number' && index >= 0) {
+                newRootIds.splice(index, 0, id);
+            } else {
+                newRootIds.push(id);
+            }
         }
 
         return {
@@ -86,5 +99,59 @@ export const useBuilderStore = create<BuilderStore>((set) => ({
             },
             selectedComponentId: state.selectedComponentId === id ? null : state.selectedComponentId,
         };
+    }),
+    moveComponent: (componentId: string, newIndex: number, newParentId?: string) => set((state) => {
+        // Simple implementation for reordering specifically within the same list for now
+        // or moving to root. 
+        // Full tree-to-tree move is more complex but this covers basic reorder.
+
+        // 1. Find current parent
+        let currentParentId: string | null = null;
+        let currentChildren = state.pageData.rootComponentIds;
+
+        // Check if root
+        if (!state.pageData.rootComponentIds.includes(componentId)) {
+            // Find parent
+            const parentEntry = Object.entries(state.pageData.components).find(([_, comp]) =>
+                comp.children?.includes(componentId)
+            );
+            if (parentEntry) {
+                currentParentId = parentEntry[0];
+                currentChildren = parentEntry[1].children || [];
+            }
+        }
+
+        // Remove from current position
+        const updatedChildren = currentChildren.filter(id => id !== componentId);
+
+        // Insert at new position
+        // Note: For now assuming we are moving within the same list or to root for simplicity of first pass
+        // Real implementation depends on where we dropped.
+
+        // If we are strictly reordering the *current* list (most common dnd-kit sortable case):
+        const finalChildren = [...updatedChildren];
+        finalChildren.splice(newIndex, 0, componentId);
+
+        if (currentParentId) {
+            return {
+                pageData: {
+                    ...state.pageData,
+                    components: {
+                        ...state.pageData.components,
+                        [currentParentId]: {
+                            ...state.pageData.components[currentParentId],
+                            children: finalChildren
+                        }
+                    }
+                }
+            };
+        } else {
+            return {
+                pageData: {
+                    ...state.pageData,
+                    rootComponentIds: finalChildren
+                }
+            };
+        }
     }),
 }));

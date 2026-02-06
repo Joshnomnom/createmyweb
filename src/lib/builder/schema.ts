@@ -28,4 +28,25 @@ export const componentSchemas: Record<ComponentType, PropertySchema[]> = {
         { name: 'padding', type: 'text' },
         { name: 'backgroundColor', type: 'color' },
     ],
+    heading: [
+        { name: 'text', type: 'text' },
+        { name: 'level', type: 'select', options: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] },
+        { name: 'align', type: 'select', options: ['left', 'center', 'right'] },
+    ],
+    container: [
+        { name: 'maxWidth', type: 'select', options: ['sm', 'md', 'lg', 'xl', '2xl', 'full'] },
+        { name: 'padding', type: 'text' },
+    ],
+    columns: [
+        { name: 'cols', type: 'select', options: ['1', '2', '3', '4'] },
+        { name: 'gap', type: 'select', options: ['0', '2', '4', '8'] },
+    ],
+    video: [
+        { name: 'url', type: 'text' },
+    ],
+    divider: [
+        { name: 'color', type: 'color' },
+        { name: 'thickness', type: 'text' },
+        { name: 'margin', type: 'text' },
+    ],
 };

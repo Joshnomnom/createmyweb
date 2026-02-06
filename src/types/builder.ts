@@ -1,4 +1,4 @@
-export type ComponentType = 'text' | 'button' | 'image' | 'card' | 'section';
+export type ComponentType = 'text' | 'button' | 'image' | 'card' | 'section' | 'heading' | 'container' | 'columns' | 'video' | 'divider';
 
 export interface ComponentProps {
     id: string;
