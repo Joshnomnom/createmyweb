@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import "../styles/globals.css";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CreateMyWeb - The Ultimate Page Builder",
-  description: "Create stunning websites in minutes with our visual page builder.",
+  title: "CreateMyWeb",
+  description: "Firebase App",
 };
 
 export default function RootLayout({
